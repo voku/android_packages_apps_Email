@@ -372,6 +372,7 @@ public class MessageList extends ListActivity implements OnItemClickListener, On
         for (long l: savedInstanceState.getLongArray(STATE_CHECKED_ITEMS)) {
             checkedset.add(l);
         }
+        onRefresh();
     }
 
     private void saveListPosition() {
@@ -912,10 +913,8 @@ public class MessageList extends ListActivity implements OnItemClickListener, On
      *   Only when the mailbox is "stale" (currently set to 5 minutes since last refresh)
      */
     private void autoRefreshStaleMailbox() {
-        if (!mCanAutoRefresh
-                || (mListAdapter.getCursor() == null) // Check if messages info is loaded
-                || (mPushModeMailbox != null && mPushModeMailbox) // Check the push mode
-                || (mMailboxId < 0)) { // Check if this mailbox is synthetic/combined
+        if ((mListAdapter.getCursor() == null) // Check if messages info is loaded
+               || (mMailboxId < 0)) { // Check if this mailbox is synthetic/combined
             return;
         }
         mCanAutoRefresh = false;
