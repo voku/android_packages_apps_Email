@@ -36,6 +36,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.SystemProperties;
+import android.provider.Settings;
 import android.util.Log;
 
 /**
@@ -49,6 +51,9 @@ public class SecurityPolicy {
     private DevicePolicyManager mDPM;
     private ComponentName mAdminName;
     private PolicySet mAggregatePolicy;
+
+    private boolean overridePoliciesForExchange = (Settings.System.getInt(mContext.getContentResolver(),
+         Settings.System.EMAIL_POLICY_OVERRIDE, 0) == 1);
 
     /* package */ static final PolicySet NO_POLICY_SET =
             new PolicySet(0, PolicySet.PASSWORD_MODE_NONE, 0, 0, false);
@@ -212,6 +217,10 @@ public class SecurityPolicy {
      * @return true if the policies are active, false if not active
      */
     public boolean isActive(PolicySet policies) {
+        // dirty hack for Exchange
+        if (overridePoliciesForExchange) {
+            return true;
+        }
         // select aggregate set if needed
         if (policies == null) {
             policies = getAggregatePolicy();
