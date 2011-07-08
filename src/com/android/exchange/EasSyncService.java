@@ -1580,7 +1580,8 @@ public class EasSyncService extends AbstractSyncService {
                 if (!TextUtils.isEmpty(key)) {
                     PolicySet ps = new PolicySet(mAccount);
                     SecurityPolicy sp = SecurityPolicy.getInstance(mContext);
-                    if (!sp.isActive(ps)) {
+                    boolean ignoreSecurity = 0 != (mAccount.mFlags & Account.FLAGS_IGNORE_SECURITY);
+                    if (!ignoreSecurity && !sp.isActive(ps)) {
                         cv.clear();
                         cv.put(AccountColumns.SECURITY_FLAGS, 0);
                         cv.putNull(AccountColumns.SECURITY_SYNC_KEY);
