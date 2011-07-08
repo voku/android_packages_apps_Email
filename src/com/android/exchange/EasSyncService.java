@@ -426,15 +426,20 @@ public class EasSyncService extends AbstractSyncService {
                 if (code == HttpStatus.SC_FORBIDDEN || code == HTTP_NEED_PROVISIONING) {
                     // Get the policies and see if we are able to support them
                     userLog("Validate: provisioning required");
-                    if (svc.canProvision() != null) {
-                        // If so, send the advisory Exception (the account may be created later)
-                        userLog("Validate: provisioning is possible");
-                        throw new MessagingException(MessagingException.SECURITY_POLICIES_REQUIRED);
-                    } else
+                    ProvisionParser canProvision = svc.canProvision();
+                    if (canProvision != null) {
+						if (canProvision.isSupported()) {
+	                        // If so, send the advisory Exception (the account may be created later)
+	                        userLog("Validate: provisioning is possible");
+	                        throw new MessagingException(MessagingException.SECURITY_POLICIES_REQUIRED);
+	                    }
                         userLog("Validate: provisioning not possible");
                         // If not, send the unsupported Exception (the account won't be created)
                         throw new MessagingException(
                                 MessagingException.SECURITY_POLICIES_UNSUPPORTED);
+                    }
+					userLog("Unexpected response for Provision: ", code);
+                    throw new MessagingException(MessagingException.UNSPECIFIED_EXCEPTION);
                 } else if (code == HttpStatus.SC_NOT_FOUND) {
                     userLog("Wrong address or bad protocol version");
                     // We get a 404 from OWA addresses (which are NOT EAS addresses)
@@ -1272,43 +1277,57 @@ public class EasSyncService extends AbstractSyncService {
         // by the server
         ProvisionParser pp = canProvision();
         if (pp != null) {
-            SecurityPolicy sp = SecurityPolicy.getInstance(mContext);
-            // Get the policies from ProvisionParser
-            PolicySet ps = pp.getPolicySet();
-            // Update the account with a null policyKey (the key we've gotten is
-            // temporary and cannot be used for syncing)
-            if (ps.writeAccount(mAccount, null, true, mContext)) {
-                sp.updatePolicies(mAccount.mId);
-            }
-            if (pp.getRemoteWipe()) {
-                // We've gotten a remote wipe command
-                SyncManager.alwaysLog("!!! Remote wipe request received");
-                // Start by setting the account to security hold
-                sp.setAccountHoldFlag(mAccount, true);
-                // Force a stop to any running syncs for this account (except this one)
-                SyncManager.stopNonAccountMailboxSyncsForAccount(mAccount.mId);
-
-                // If we're not the admin, we can't do the wipe, so just return
-                if (!sp.isActiveAdmin()) {
-                    SyncManager.alwaysLog("!!! Not device admin; can't wipe");
-                    return false;
-                }
-                // First, we've got to acknowledge it, but wrap the wipe in try/catch so that
-                // we wipe the device regardless of any errors in acknowledgment
-                try {
-                    SyncManager.alwaysLog("!!! Acknowledging remote wipe to server");
-                    acknowledgeRemoteWipe(pp.getPolicyKey());
-                } catch (Exception e) {
-                    // Because remote wipe is such a high priority task, we don't want to
-                    // circumvent it if there's an exception in acknowledgment
-                }
-                // Then, tell SecurityPolicy to wipe the device
-                SyncManager.alwaysLog("!!! Executing remote wipe");
-                sp.remoteWipe();
-                return false;
-            } else if (sp.isActive(ps)) {
-                // See if the required policies are in force; if they are, acknowledge the policies
-                // to the server and get the final policy key
+        	boolean finishProvision = false;
+        	SecurityPolicy sp = SecurityPolicy.getInstance(mContext);
+        	// Get the policies from ProvisionParser
+        	PolicySet ps = pp.getPolicySet();
+        	
+        	boolean ignoreSecurity = 0 != (mAccount.mFlags & Account.FLAGS_IGNORE_SECURITY);
+        	if (ignoreSecurity) {
+        		finishProvision = true;
+        	} else if (pp.isSupported()) {
+	            // Update the account with a null policyKey (the key we've gotten is
+	            // temporary and cannot be used for syncing)
+	            if (ps.writeAccount(mAccount, null, true, mContext)) {
+	                sp.updatePolicies(mAccount.mId);
+	            }
+	            if (pp.getRemoteWipe()) {
+	                // We've gotten a remote wipe command
+	                SyncManager.alwaysLog("!!! Remote wipe request received");
+	                // Start by setting the account to security hold
+	                sp.setAccountHoldFlag(mAccount, true);
+	                // Force a stop to any running syncs for this account (except this one)
+	                SyncManager.stopNonAccountMailboxSyncsForAccount(mAccount.mId);
+	
+	                // If we're not the admin, we can't do the wipe, so just return
+	                if (!sp.isActiveAdmin()) {
+	                    SyncManager.alwaysLog("!!! Not device admin; can't wipe");
+	                    return false;
+	                }
+	                // First, we've got to acknowledge it, but wrap the wipe in try/catch so that
+	                // we wipe the device regardless of any errors in acknowledgment
+	                try {
+	                    SyncManager.alwaysLog("!!! Acknowledging remote wipe to server");
+	                    acknowledgeRemoteWipe(pp.getPolicyKey());
+	                } catch (Exception e) {
+	                    // Because remote wipe is such a high priority task, we don't want to
+	                    // circumvent it if there's an exception in acknowledgment
+	                }
+	                // Then, tell SecurityPolicy to wipe the device
+	                SyncManager.alwaysLog("!!! Executing remote wipe");
+	                sp.remoteWipe();
+	                return false;
+	            } else if (sp.isActive(ps)) {
+	                // See if the required policies are in force; if they are, acknowledge the policies
+	                // to the server and get the final policy key
+	            	finishProvision = true;
+	            } else {
+	                // Notify that we are blocked because of policies
+	                sp.policiesRequired(mAccount.mId);
+	            }
+        	}
+        	
+        	if (finishProvision) {
                 String policyKey = acknowledgeProvision(pp.getPolicyKey(), PROVISION_STATUS_OK);
                 if (policyKey != null) {
                     // Write the final policy key to the Account and say we've been successful
@@ -1317,14 +1336,11 @@ public class EasSyncService extends AbstractSyncService {
                     SyncManager.releaseSecurityHold(mAccount);
                     return true;
                 }
-            } else {
-                // Notify that we are blocked because of policies
-                sp.policiesRequired(mAccount.mId);
-            }
+        	}
         }
         return false;
     }
-
+    
     private String getPolicyType() {
         return (mProtocolVersionDouble >=
             Eas.SUPPORTED_PROTOCOL_EX2007_DOUBLE) ? EAS_12_POLICY_TYPE : EAS_2_POLICY_TYPE;
@@ -1360,8 +1376,9 @@ public class EasSyncService extends AbstractSyncService {
                     // "allow non-provisionable devices" setting is enabled on the server
                     String policyKey = acknowledgeProvision(pp.getPolicyKey(),
                             PROVISION_STATUS_PARTIAL);
+                    pp.setForceSupported(policyKey != null);
                     // Return either the parser (success) or null (failure)
-                    return (policyKey != null) ? pp : null;
+                    return pp;
                 }
             }
         }
