@@ -150,6 +150,14 @@
     <string name="notification_new_title" msgid="2200257910380529139">"新郵件"</string>
     <!-- Dialog text when we are unable to load the message for display -->
     <string name="error_loading_message_body" msgid="2265140604109272914">"載入郵件文字時發生未預期的錯誤，郵件可能過大以致於無法檢視。"</string>
+    <!-- Appears in Confirm deletion dialog title -->
+    <string name="confirm_on_delete_dlg_title">刪除確認</string>
+    <!-- Appears in Confirm deletion dialog message -->
+    <string name="confirm_on_delete_dlg_msg">您想要刪除此訊息嗎？</string>
+    <!-- Appears in Confirm send dialog title -->
+    <string name="confirm_on_send_dlg_title">傳送訊息？</string>
+    <!-- Appears in Confirm send dialog message -->
+    <string name="confirm_on_send_dlg_msg">要傳送此訊息？</string>
 
     <!-- Notification message in notifications window when one account has
          one or more new messages; e.g, "279 unread (someone@google.com)". -->
@@ -441,6 +449,8 @@
 
     <!-- In Account setup options screen, Activity title -->
     <string name="account_setup_options_title" msgid="8995162193118880993">"帳戶選項"</string>
+    <!-- In Account setup color screen, Activity title -->
+    <string name="account_setup_color_title">帳戶色彩</string>
     <!-- In Account setup options screen, label for email check frequency selector -->
     <string name="account_setup_options_mail_check_frequency_label" msgid="4824859792882810053">"查看收件匣頻率"</string>
     <!-- In Account setup options & Account Settings screens, label for email check frequency option -->
@@ -544,6 +554,8 @@
     <!-- On Settings screen, setting option name and title of dialog box that opens -->
     <string name="account_settings_mail_check_frequency_label" msgid="8271462919214560616">"查看收件匣頻率"</string>
     <!-- On Settings screen, setting option name -->
+    <string name="account_settings_color_label">帳戶色彩</string>
+    <!-- On Settings screen, setting option name -->
     <string name="account_settings_incoming_label" msgid="7858928031806297542">"內收設定"</string>
     <!-- On Settings screen, setting option name -->
     <string name="account_settings_outgoing_label" msgid="4464829249980026745">"外寄設定"</string>
@@ -572,7 +584,7 @@
     <!-- On Settings screen, vibrate pop-up menu summary text -->
     <string name="account_settings_vibrate_when_summary" msgid="3991584445166247189">"收到電子郵件時震動提醒"</string>
     <!-- On Settings screen, vibrate pop-up menu option "always" text -->
-    <string name="account_settings_vibrate_when_always" msgid="6739506816960483174">"永遠要"</string>
+    <string name="account_settings_vibrate_when_always" msgid="6739506816960483174">"一律"</string>
     <!-- On Settings screen, vibrate pop-up menu option "silent" text -->
     <string name="account_settings_vibrate_when_silent" msgid="6417076436551648924">"靜音時才啟用"</string>
     <!-- On Settings screen, vibrate pop-up menu option "never" text -->
@@ -590,6 +602,12 @@
     <string name="misc_settings_label">雜項</string>
     <string name="account_settings_msg_list_on_delete">返回收件匣</string>
     <string name="account_settings_msg_list_on_delete_summary">刪除檢視中的郵件後返回收件匣</string>
+    <!-- Confirm on delete -->
+    <string name="account_settings_confirm_on_delete">刪除確認</string>
+    <string name="account_settings_confirm_on_delete_summary">每當您執行刪除動作時均顯示詢問話框</string>
+    <!-- Confirm on send -->
+    <string name="account_settings_confirm_on_send">傳送確認</string>
+    <string name="account_settings_confirm_on_send_summary">每當您執行傳送動作時均顯示詢問話框</string>
     <!-- Title of Remove account confirmation dialog box -->
     <string name="account_delete_dlg_title" msgid="6806087520856396608">"移除帳戶"</string>
     <!-- Message of Remove account confirmation dialog box -->
@@ -652,7 +670,7 @@
 
     <!-- Strings that support the DeviceAdmin / DevicePolicyManager API -->
     <!-- Name of the DeviceAdmin (seen in settings & in user confirmation screen) -->
-    <string name="device_admin_label" msgid="8680224994637869414">"傳送電子郵件"</string>
+    <string name="device_admin_label" msgid="8680224994637869414">"電子郵件"</string>
     <!-- Long-form description of the DeviceAdmin (2nd line in settings & in user conf. screen) -->
     <string name="device_admin_description" msgid="426727923791430306">"啟用伺服器專用安全性政策"</string>
 
@@ -690,4 +708,8 @@
     <string name="toast_folder_hide_on">開始隱藏資料夾：</string>
     <string name="toast_folder_hide_off">不再隱藏資料夾：</string>
     <string name="toast_folder_hide_invalid">無法隱藏此資料夾！</string>
+
+    <string name="sample_account_name">帳戶名稱範例</string>
+    <!-- skipping untranslatable /resources:0/string:name=default_rgb_value -->
+    <!-- skipping untranslatable /resources:0/string:name=default_html_color_code -->
 </resources>

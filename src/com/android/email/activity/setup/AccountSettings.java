@@ -16,8 +16,10 @@
 
 package com.android.email.activity.setup;
 
+import com.android.email.Controller;
 import com.android.email.Email;
 import com.android.email.R;
+import com.android.email.activity.AccountFolderList;
 import com.android.email.activity.Welcome;
 import com.android.email.mail.MessagingException;
 import com.android.email.mail.Sender;
@@ -27,6 +29,7 @@ import com.android.email.provider.EmailContent.AccountColumns;
 import com.android.email.provider.EmailContent.HostAuth;
 
 import android.app.Activity;
+import android.app.AlertDialog.Builder;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -48,6 +51,7 @@ public class AccountSettings extends PreferenceActivity {
     private static final String PREFERENCE_TOP_CATEGORY = "account_settings";
     private static final String PREFERENCE_DESCRIPTION = "account_description";
     private static final String PREFERENCE_NAME = "account_name";
+    private static final String PREFERENCE_COLOR = "color";
     private static final String PREFERENCE_SIGNATURE = "account_signature";
     private static final String PREFERENCE_FREQUENCY = "account_check_frequency";
     private static final String PREFERENCE_DEFAULT = "account_default";
@@ -60,6 +64,8 @@ public class AccountSettings extends PreferenceActivity {
     private static final String PREFERENCE_SYNC_CONTACTS = "account_sync_contacts";
     private static final String PREFERENCE_SYNC_CALENDAR = "account_sync_calendar";
     private static final String PREFERENCE_MSG_LIST_ON_DELETE = "msg_list_on_delete";
+    private static final String PREFERENCE_CONFIRM_ON_DELETE = "confirm_on_delete";
+    private static final String PREFERENCE_CONFIRM_ON_SEND = "confirm_on_send";
 
     // These strings must match account_settings_vibrate_when_* strings in strings.xml
     private static final String PREFERENCE_VALUE_VIBRATE_WHEN_ALWAYS = "always";
@@ -90,6 +96,9 @@ public class AccountSettings extends PreferenceActivity {
     private CheckBoxPreference mSyncContacts;
     private CheckBoxPreference mSyncCalendar;
     private CheckBoxPreference mMsgListOnDelete;
+    private CheckBoxPreference mConfirmOnDelete;
+    private CheckBoxPreference mConfirmOnSend;
+    private ColorPreference mColor;
 
     /**
      * Display (and edit) settings for a specific account
@@ -152,8 +161,11 @@ public class AccountSettings extends PreferenceActivity {
         });
 
         mAccountName = (EditTextPreference) findPreference(PREFERENCE_NAME);
-        mAccountName.setSummary(mAccount.getSenderName());
-        mAccountName.setText(mAccount.getSenderName());
+        String senderName = mAccount.getSenderName();
+        // In rare cases, sendername will be null;  Change this to empty string to avoid NPE's
+        if (senderName == null) senderName = "";
+        mAccountName.setSummary(senderName);
+        mAccountName.setText(senderName);
         mAccountName.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 final String summary = newValue.toString();
@@ -162,6 +174,18 @@ public class AccountSettings extends PreferenceActivity {
                 return false;
             }
         });
+        
+        mColor = (ColorPreference)findPreference(PREFERENCE_COLOR);
+        int color = mAccount.getAccountColor();
+        mColor.setSummary("0x" + Integer.toHexString(color).toUpperCase());
+        mColor.setChipColor(color);
+        mColor.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                    	onColorSettings();
+                        return true;
+                    }
+                });
 
         mAccountSignature = (EditTextPreference) findPreference(PREFERENCE_SIGNATURE);
         mAccountSignature.setSummary(mAccount.getSignature());
@@ -225,6 +249,13 @@ public class AccountSettings extends PreferenceActivity {
 
         mMsgListOnDelete = (CheckBoxPreference) findPreference(PREFERENCE_MSG_LIST_ON_DELETE);
         mMsgListOnDelete.setChecked(0 != (mAccount.getFlags() & Account.FLAGS_MSG_LIST_ON_DELETE));
+
+        mConfirmOnDelete = (CheckBoxPreference) findPreference(PREFERENCE_CONFIRM_ON_DELETE);
+        mConfirmOnDelete.setChecked(0 != (mAccount.getFlags() & Account.FLAGS_CONFIRM_ON_DELETE));
+
+        mConfirmOnSend = (CheckBoxPreference) findPreference(PREFERENCE_CONFIRM_ON_SEND);
+        mConfirmOnSend.setChecked(0 != (mAccount.getFlags() & Account.FLAGS_CONFIRM_ON_SEND));
+
         mAccountDefault = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT);
         mAccountDefault.setChecked(mAccount.mId == Account.getDefaultAccountId(this));
 
@@ -343,6 +374,11 @@ public class AccountSettings extends PreferenceActivity {
                 return;
             }
             mAccount.setDeletePolicy(refreshedAccount.getDeletePolicy());
+            
+            int newcol = refreshedAccount.getAccountColor();
+            mColor.setChipColor(newcol);
+            mColor.setSummary("0x" + Integer.toHexString(newcol).toUpperCase());
+            
             mAccountDirty = false;
         }
     }
@@ -350,7 +386,8 @@ public class AccountSettings extends PreferenceActivity {
     private void saveSettings() {
         int newFlags = mAccount.getFlags() &
                 ~(Account.FLAGS_NOTIFY_NEW_MAIL | Account.FLAGS_VIBRATE_ALWAYS |
-                		Account.FLAGS_VIBRATE_WHEN_SILENT | Account.FLAGS_MSG_LIST_ON_DELETE);
+                        Account.FLAGS_VIBRATE_WHEN_SILENT | Account.FLAGS_MSG_LIST_ON_DELETE |
+                        Account.FLAGS_CONFIRM_ON_DELETE | Account.FLAGS_CONFIRM_ON_SEND);
 
         mAccount.setDefaultAccount(mAccountDefault.isChecked());
         mAccount.setDisplayName(mAccountDescription.getText());
@@ -358,6 +395,8 @@ public class AccountSettings extends PreferenceActivity {
         mAccount.setSignature(mAccountSignature.getText());
         newFlags |= mAccountNotify.isChecked() ? Account.FLAGS_NOTIFY_NEW_MAIL : 0;
         newFlags |= mMsgListOnDelete.isChecked() ? Account.FLAGS_MSG_LIST_ON_DELETE : 0;
+        newFlags |= mConfirmOnDelete.isChecked() ? Account.FLAGS_CONFIRM_ON_DELETE : 0;
+        newFlags |= mConfirmOnSend.isChecked() ? Account.FLAGS_CONFIRM_ON_SEND : 0;
         mAccount.setSyncInterval(Integer.parseInt(mCheckFrequency.getValue()));
         if (mSyncWindow != null) {
             mAccount.setSyncLookback(Integer.parseInt(mSyncWindow.getValue()));
@@ -381,6 +420,10 @@ public class AccountSettings extends PreferenceActivity {
 
         }
         AccountSettingsUtils.commitSettings(this, mAccount);
+        try {
+            Controller.getInstance(getApplication()).updateMailboxList(
+                    mAccountId, null);
+        } catch (Exception e) { }
         Email.setServicesEnabled(this);
     }
 
@@ -392,6 +435,17 @@ public class AccountSettings extends PreferenceActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    private void onColorSettings () {
+    	try {
+    		java.lang.reflect.Method m = AccountSetupColor.class.getMethod("actionEditColorSettings",
+                    android.app.Activity.class, Account.class);
+            m.invoke(null, this, mAccount);
+            mAccountDirty = true;            
+        } catch (Exception e) {
+            Log.d(Email.LOG_TAG, "Error while trying to invoke store settings.", e);
+        }
+    }
+    
     private void onIncomingSettings() {
         try {
             Store store = Store.getInstance(mAccount.getStoreUri(this), getApplication(), null);

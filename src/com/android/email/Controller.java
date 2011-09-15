@@ -623,7 +623,7 @@ public class Controller {
      * @param messageId the id of message
      * @return the accountId corresponding to the given messageId, or -1 if not found.
      */
-    private long lookupAccountForMessage(long messageId) {
+    public long lookupAccountForMessage(long messageId) {
         ContentResolver resolver = mProviderContext.getContentResolver();
         Cursor c = resolver.query(EmailContent.Message.CONTENT_URI,
                                   MESSAGEID_TO_ACCOUNTID_PROJECTION, EmailContent.RECORD_ID + "=?",
@@ -826,6 +826,9 @@ public class Controller {
         File saveToFile = AttachmentProvider.getAttachmentFilename(mProviderContext,
                 accountId, attachmentId);
         Attachment attachInfo = Attachment.restoreAttachmentWithId(mProviderContext, attachmentId);
+        if (attachInfo == null) {
+            return;
+        }
 
         if (saveToFile.exists() && attachInfo.mContentUri != null) {
             // The attachment has already been downloaded, so we will just "pretend" to download it

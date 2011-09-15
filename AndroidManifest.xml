@@ -16,8 +16,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.email"
-    android:versionCode="230000"
-    android:versionName="2.3"
+    android:versionCode="235000"
+    android:versionName="2.3.5"
     >
 
     <original-package android:name="com.android.email" />
@@ -85,6 +85,11 @@
         <activity
             android:name=".activity.setup.AccountSetupAccountType"
             android:label="@string/account_setup_account_type_title"
+            >
+        </activity>
+        <activity
+            android:name=".activity.setup.AccountSetupColor"
+            android:label="@string/account_setup_color_title"
             >
         </activity>
         <activity

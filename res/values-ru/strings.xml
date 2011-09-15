@@ -61,6 +61,14 @@
     <string name="status_network_error" msgid="6045933332005067021">"Ошибка соединения"</string>
     <string name="notification_new_title" msgid="2200257910380529139">"Новое письмо"</string>
     <string name="error_loading_message_body" msgid="2265140604109272914">"Непредвиденная ошибка при загрузке текста сообщения. Возможно, объем сообщения слишком велик."</string>
+    <!-- Appears in Confirm deletion dialog title -->
+    <string name="confirm_on_delete_dlg_title">Подтвердите удаление</string>
+    <!-- Appears in Confirm deletion dialog message -->
+    <string name="confirm_on_delete_dlg_msg">Вы хотите удалить это сообщение?</string>
+    <!-- Appears in Confirm send dialog title -->
+    <string name="confirm_on_send_dlg_title">Отправить сообщение?</string>
+    <!-- Appears in Confirm send dialog message -->
+    <string name="confirm_on_send_dlg_msg">Отправить это сообщение?</string>
   <plurals name="notification_new_one_account_fmt">
     <item quantity="one" msgid="3422945912787702191">"Непрочитанных: <xliff:g id="UNREAD_MESSAGE_COUNT">%1$d</xliff:g> (<xliff:g id="ACCOUNT">%2$s</xliff:g>)"</item>
     <item quantity="few" msgid="6543078667692990869">"Непрочитанных: <xliff:g id="UNREAD_MESSAGE_COUNT">%1$d</xliff:g> (<xliff:g id="ACCOUNT">%2$s</xliff:g>)"</item>
@@ -178,6 +186,7 @@
     <string name="account_setup_exchange_ssl_label" msgid="6704105469083211236">"Использовать защищенное соединение (SSL)"</string>
     <string name="account_setup_exchange_trust_certificates_label" msgid="6232880757633882678">"Принимать все сертификаты SSL"</string>
     <string name="account_setup_options_title" msgid="8995162193118880993">"Параметры аккаунта"</string>
+    <string name="account_setup_color_title">Цвет аккаунта</string>
     <string name="account_setup_options_mail_check_frequency_label" msgid="4824859792882810053">"Частота проверки папки \"Входящие\""</string>
     <string name="account_setup_options_mail_check_frequency_never" msgid="287951859480505416">"Никогда"</string>
     <string name="account_setup_options_mail_check_frequency_push">Автоматически (push)</string>
@@ -223,6 +232,7 @@
     <string name="account_settings_exchange_summary" msgid="8498451479029626317">"Частота синхронизации, уведомления и другие настройки"</string>
     <string name="account_settings_notify_summary" msgid="6609224590300639887">"При получении сообщения по электронной почте в строке состояния появляется уведомление"</string>
     <string name="account_settings_mail_check_frequency_label" msgid="8271462919214560616">"Частота проверки папки \"Входящие\""</string>
+    <string name="account_settings_color_label">Цвет аккаунта</string>
     <string name="account_settings_incoming_label" msgid="7858928031806297542">"Настройки входящих сообщений"</string>
     <string name="account_settings_outgoing_label" msgid="4464829249980026745">"Настройки исходящих сообщений"</string>
     <string name="account_settings_description_label" msgid="8894815221204511715">"Название аккаунта"</string>
@@ -288,6 +298,7 @@
     <string name="toast_folder_sync_invalid">Неверная папка для синхронизации</string>
     <string name="toast_folder_hide_on">Скрытие папки:</string>
     <string name="toast_folder_hide_off">Открытие папки:</string>
-    <string name="toast_folder_hide_invalid">Не могу скрыть эту папку!</string>	
+    <string name="toast_folder_hide_invalid">Не могу скрыть эту папку!</string>
+    <string name="sample_account_name" >Пример имени аккаунта</string>
 	
 </resources>
