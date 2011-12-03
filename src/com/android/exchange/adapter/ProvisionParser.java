@@ -38,6 +38,7 @@ public class ProvisionParser extends Parser {
     String mPolicyKey = null;
     boolean mRemoteWipe = false;
     boolean mIsSupportable = true;
+    boolean mIsForceSupported = false;
 
     public ProvisionParser(InputStream in, EasSyncService service) throws IOException {
         super(in);
@@ -50,6 +51,14 @@ public class ProvisionParser extends Parser {
 
     public String getPolicyKey() {
         return mPolicyKey;
+    }
+    
+    public boolean isSupported() {
+    	return mIsForceSupported || hasSupportablePolicySet();
+    }
+    
+    public void setForceSupported(boolean forceSupported) {
+    	mIsForceSupported = forceSupported;
     }
 
     public boolean getRemoteWipe() {

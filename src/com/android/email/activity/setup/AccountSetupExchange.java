@@ -350,7 +350,10 @@ public class AccountSetupExchange extends Activity implements OnClickListener,
      * Process activity result when validating existing account
      */
     private void doActivityResultValidateExistingAccount(int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK || resultCode == AccountSetupCheckSettings.RESULT_IGNORE_SECURITY) {
+        	if (resultCode == AccountSetupCheckSettings.RESULT_IGNORE_SECURITY) {
+        		setAccountIgnoreSecurityFlag(mAccount, true);
+        	}
             if (mAccount.isSaved()) {
                 // Account.update will NOT save the HostAuth's
                 mAccount.update(this, mAccount.toContentValues());
@@ -382,13 +385,24 @@ public class AccountSetupExchange extends Activity implements OnClickListener,
      * Process activity result when validating new account
      */
     private void doActivityResultValidateNewAccount(int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK || resultCode == AccountSetupCheckSettings.RESULT_IGNORE_SECURITY) {
+        	if (resultCode == AccountSetupCheckSettings.RESULT_IGNORE_SECURITY) {
+        		setAccountIgnoreSecurityFlag(mAccount, true);
+        	}
             // Go directly to next screen
             doOptions();
         } else if (resultCode == AccountSetupCheckSettings.RESULT_SECURITY_REQUIRED_USER_CANCEL) {
             finish();
         }
         // else (resultCode not OK) - just return into this activity for further editing
+    }
+
+    private static void setAccountIgnoreSecurityFlag(Account account, boolean newState) {
+        if (newState) {
+            account.mFlags |= Account.FLAGS_IGNORE_SECURITY;
+        } else {
+            account.mFlags &= ~Account.FLAGS_IGNORE_SECURITY;
+        }
     }
 
     /**

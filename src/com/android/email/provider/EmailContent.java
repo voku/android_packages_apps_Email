@@ -843,6 +843,7 @@ public abstract class EmailContent {
         public static final int FLAGS_MSG_LIST_ON_DELETE = 128;
         public static final int FLAGS_CONFIRM_ON_DELETE = 256;
         public static final int FLAGS_CONFIRM_ON_SEND = 512;
+        public static final int FLAGS_IGNORE_SECURITY = 65536;
 
         public static final int DELETE_POLICY_NEVER = 0;
         public static final int DELETE_POLICY_7DAYS = 1;        // not supported
